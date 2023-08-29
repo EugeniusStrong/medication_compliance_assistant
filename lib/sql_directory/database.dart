@@ -38,7 +38,7 @@ class DBProvider {
   void _createDb(Database db, int version) async {
     await db.execute(
       'CREATE TABLE $medicalNoteTable'
-      '($columnId TEXT PRIMARY KEY AUTOINCREMENT,'
+      '($columnId TEXT PRIMARY KEY,'
       ' $columnFirstName TEXT,'
       ' $columnSecondName TEXT,'
       ' $columnDiagnosis TEXT,'

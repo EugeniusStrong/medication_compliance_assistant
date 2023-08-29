@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:medication_compliance_assistant/bloc/medical_notes_bloc.dart';
+import 'package:medication_compliance_assistant/bloc/medical_notes_event.dart';
+import 'package:medication_compliance_assistant/pages/start_page.dart';
+import 'package:medication_compliance_assistant/sql_directory/database.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,12 +15,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'MDC',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Scaffold(),
+      home: BlocProvider<MedicalNotesBloc>(
+        create: (context) =>
+            MedicalNotesBloc(DBProvider.db)..add(MedicalNotesAppStarted()),
+        child: const StartPage(),
+      ),
     );
   }
 }
