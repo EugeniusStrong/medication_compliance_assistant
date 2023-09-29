@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:medication_compliance_assistant/models/patient.dart';
 
 class UserInputPage extends StatefulWidget {
-  const UserInputPage({super.key});
+  final Patient? patient;
+
+  const UserInputPage({super.key, required this.patient});
 
   @override
   State<UserInputPage> createState() => _UserInputPageState();
@@ -9,15 +12,34 @@ class UserInputPage extends StatefulWidget {
 
 class _UserInputPageState extends State<UserInputPage> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController();
-  final _secondNameController = TextEditingController();
-  final _diagnosisNameController = TextEditingController();
+  late DateTime _birthDay;
+  late Gender _gender;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _middleNameController;
+  late final TextEditingController _addressNameController;
+
+  @override
+  void initState() {
+    super.initState();
+    _firstNameController =
+        TextEditingController(text: widget.patient?.firstName ?? '');
+    _lastNameController =
+        TextEditingController(text: widget.patient?.lastName ?? '');
+    _middleNameController =
+        TextEditingController(text: widget.patient?.middleName ?? '');
+    _addressNameController =
+        TextEditingController(text: widget.patient?.address ?? '');
+    _birthDay = widget.patient?.birthDate ?? DateTime(1900);
+    _gender = widget.patient?.gender ?? Gender.male;
+  }
 
   @override
   void dispose() {
     _firstNameController.dispose();
-    _secondNameController.dispose();
-    _diagnosisNameController.dispose();
+    _lastNameController.dispose();
+    _middleNameController.dispose();
+    _addressNameController.dispose();
     super.dispose();
   }
 
@@ -72,11 +94,11 @@ class _UserInputPageState extends State<UserInputPage> {
                 height: 15,
               ),
               TextFormField(
-                controller: _secondNameController,
+                controller: _lastNameController,
                 decoration: InputDecoration(
                     suffixIcon: GestureDetector(
                       onTap: () {
-                        _secondNameController.clear();
+                        _lastNameController.clear();
                       },
                       child: const Icon(
                         Icons.delete_outline,
@@ -127,8 +149,22 @@ class _UserInputPageState extends State<UserInputPage> {
         ),
       ),
       floatingActionButton: ElevatedButton(
-        onPressed: () {},
-        child: Text('Далее'),
+        onPressed: () {
+          widget.userMedicationReminder.firstName = _firstNameController.text;
+          widget.userMedicationReminder.secondName = _lastNameController.text;
+          widget.userMedicationReminder.diagnosis =
+              _diagnosisNameController.text;
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DrugInputPage(
+                userMedicationReminder: widget.userMedicationReminder,
+              ),
+            ),
+          );
+        },
+        child: const Text('Далее'),
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:medication_compliance_assistant/models/user_medication_reminder.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -9,25 +8,13 @@ class DBProvider {
   static final DBProvider db = DBProvider._();
   static Database? _database;
 
-  static const medicalNoteTable = 'medicalNote';
-  static const columnId = 'id';
-  static const columnFirstName = 'firstName';
-  static const columnSecondName = 'secondName';
-  static const columnDiagnosis = 'diagnosis';
-  static const columnDrugName = 'drugName';
-  static const columnDrugDose = 'drugDose';
-  static const columnDrugTime = 'drugTime';
-  static const columnIsRemind = 'isRemind';
-
-  Future<Database?> get database async {
-    if (_database != null) return _database;
-    _database = await _initDB();
-    return _database;
+  Future<Database> get database async {
+    return _database ??= await _initDB();
   }
 
-  Future<Database?> _initDB() async {
+  Future<Database> _initDB() async {
     Directory dir = await getApplicationDocumentsDirectory();
-    String path = '${dir.path}/MedicalNote.db';
+    String path = '${dir.path}/MedicalNoteNewBase.db';
     return await openDatabase(
       path,
       version: 1,
@@ -37,73 +24,41 @@ class DBProvider {
 
   void _createDb(Database db, int version) async {
     await db.execute(
-      'CREATE TABLE $medicalNoteTable'
-      '($columnId TEXT PRIMARY KEY,'
-      ' $columnFirstName TEXT,'
-      ' $columnSecondName TEXT,'
-      ' $columnDiagnosis TEXT,'
-      ' $columnDrugName TEXT,'
-      ' $columnDrugDose TEXT,'
-      ' $columnDrugTime TEXT,'
-      ' $columnIsRemind INTEGER)',
+      'CREATE TABLE patients'
+      '(id TEXT PRIMARY KEY,'
+      'firstName TEXT NOT NULL,'
+      'lastName TEXT NOT NULL,'
+      'birthDate TEXT NOT NULL,'
+      'gender TEXT NOT NULL,'
+      'middleName TEXT,'
+      'address TEXT)',
     );
-  }
-
-  Future<List<UserMedicationReminder>> getNotes() async {
-    Database? db = await database;
-    final List<Map<String, Object?>>? notesMapList =
-        await db?.query(medicalNoteTable);
-    final List<UserMedicationReminder> notesList = [];
-    for (var noteMap in notesMapList!) {
-      notesList.add(UserMedicationReminder.fromMap(noteMap));
-    }
-    return notesList;
-  }
-
-  Future<int?> deleteNote(String? id) async {
-    Database? db = await database;
-    return await db?.delete(
-      medicalNoteTable,
-      where: '$columnId = ?',
-      whereArgs: [id],
+    await db.execute(
+      'CREATE TABLE drugs'
+      '(id TEXT PRIMARY KEY,'
+      'name TEXT NOT NULL,'
+      'description TEXT NOT NULL,'
+      'dose TEXT NOT NULL,'
+      'cost INTEGER NOT NULL)',
     );
-  }
-
-  Future<void> insertOrUpdate(
-    String? id,
-    String? firstName,
-    String? secondName,
-    String? diagnosis,
-    String? drugName,
-    String? drugDose,
-    DateTime? drugTime,
-    bool? isRemind,
-  ) async {
-    final model = UserMedicationReminder(
-      id: id,
-      firstName: firstName,
-      secondName: secondName,
-      diagnosis: diagnosis,
-      drugDose: drugDose,
-      drugName: drugName,
-      drugTime: drugTime,
-      isRemind: isRemind,
+    await db.execute(
+      'CREATE TABLE medication'
+      '(id TEXT PRIMARY KEY,'
+      'diagnosis TEXT NOT NULL,'
+      'patientId TEXT NOT NULL,'
+      'therapy TEXT,'
+      'recommendations TEXT,'
+      'FOREIGN KEY (patientId) REFERENCES patients (id)'
+      ')',
     );
-
-    int isRemindValue = isRemind != null && isRemind ? 1 : 0;
-
-    Database? db = await database;
-    await db!.insert(
-        medicalNoteTable,
-        {
-          columnFirstName: model.firstName,
-          columnSecondName: model.secondName,
-          columnDiagnosis: model.diagnosis,
-          columnDrugName: model.drugName,
-          columnDrugDose: model.drugDose,
-          columnDrugTime: model.drugTime?.toIso8601String(),
-          columnIsRemind: isRemindValue,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.execute(
+      'CREATE TABLE medicalSupplies'
+      '(medicationId TEXT NOT NULL,'
+      'drugId TEXT NOT NULL,'
+      'FOREIGN KEY (medicationId) REFERENCES medication (id),'
+      'FOREIGN KEY (drugId) REFERENCES drugs (id),'
+      'UNIQUE (medicationId,drugId)'
+      ')',
+    );
   }
 }
