@@ -39,7 +39,7 @@ class StartPage extends StatelessWidget {
                         color: Colors.black54,
                       ),
                       Text(
-                        'To add a note press +',
+                        'To add a patient press +',
                         style: TextStyle(fontSize: 30),
                       ),
                     ],
