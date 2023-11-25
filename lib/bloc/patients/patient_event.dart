@@ -18,6 +18,15 @@ class PatientAddPressed extends PatientEvent {
   List<Object?> get props => [patient];
 }
 
+class PatientChangePressed extends PatientEvent {
+  final Patient patient;
+
+  const PatientChangePressed({required this.patient});
+
+  @override
+  List<Object?> get props => [patient];
+}
+
 class PatientDeletePressed extends PatientEvent {
   final Patient patient;
 

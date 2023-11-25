@@ -36,6 +36,19 @@ class MedicationProvider {
     );
   }
 
+  Future<List<Medication>> getByPatientId(String id) async {
+    final res = await db.query(
+      _tableName,
+      where: 'patientId = ?',
+      whereArgs: [id],
+    );
+    final List<Medication> list = [];
+    for (final item in res) {
+      list.add(await _fromMap(item));
+    }
+    return list;
+  }
+
   Future<void> save(Medication medication) async {
     await patientProvider.save(medication.patient);
     for (final drug in medication.medicalSupplies) {

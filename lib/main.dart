@@ -4,8 +4,7 @@ import 'package:medication_compliance_assistant/database_providers/drugs_provide
 import 'package:medication_compliance_assistant/database_providers/medical_supplies_provider.dart';
 import 'package:medication_compliance_assistant/database_providers/medication_provider.dart';
 import 'package:medication_compliance_assistant/database_providers/patient_provider.dart';
-import 'package:medication_compliance_assistant/models/patient.dart';
-import 'package:medication_compliance_assistant/pages/user_input_page.dart';
+import 'package:medication_compliance_assistant/pages/start_page.dart';
 import 'package:medication_compliance_assistant/sql_directory/database.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -37,19 +36,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MDC',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: PatientInputPage(
-        patient: Patient(
-            id: '',
-            firstName: '',
-            lastName: '',
-            birthDate: DateTime(1900),
-            gender: Gender.male),
-      ),
-    );
+        debugShowCheckedModeBanner: false,
+        title: 'MDC',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const StartPage());
   }
 }

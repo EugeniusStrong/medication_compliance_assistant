@@ -48,4 +48,9 @@ class Drug {
       cost: cost ?? this.cost,
     );
   }
+
+  @override
+  String toString() {
+    return '$id $name';
+  }
 }

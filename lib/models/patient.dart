@@ -62,6 +62,11 @@ class Patient {
       address: address ?? this.address,
     );
   }
+
+  @override
+  String toString() {
+    return '$lastName $firstName ${middleName ?? ''}';
+  }
 }
 
 enum Gender { male, female }

@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:medication_compliance_assistant/bloc/patients/patient_bloc.dart';
 import 'package:medication_compliance_assistant/models/patient.dart';
+import 'package:medication_compliance_assistant/pages/medication_input_page.dart';
+import 'package:medication_compliance_assistant/pages/medication_list_page.dart';
+import 'package:medication_compliance_assistant/pages/patient_input_page.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -12,22 +15,20 @@ class StartPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => PatientBloc(patientProvider: GetIt.instance.get())
         ..add(PatientShown()),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'MEDICAL ASSISTANT',
-            style: TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.deepPurple),
+      child: Builder(builder: (context) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text(
+              'MEDICAL ASSISTANT',
+              style: TextStyle(
+                  fontWeight: FontWeight.w600, color: Colors.deepPurple),
+            ),
+            centerTitle: true,
           ),
-          centerTitle: true,
-        ),
-        body: BlocBuilder<PatientBloc, PatientState>(
-          builder: (context, state) {
-            if (state is PatientInitial) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (state is PatientLoadSuccess) {
+          body:
+              BlocBuilder<PatientBloc, PatientState>(builder: (context, state) {
+            if (state is PatientLoadSuccess) {
+              print('State: $state');
               if (state.patients.isEmpty) {
                 return const Center(
                   child: Column(
@@ -55,12 +56,35 @@ class StartPage extends StatelessWidget {
                     child: GestureDetector(
                       child: Card(
                         child: ListTile(
-                          title: const Text('Пациент'),
+                          trailing: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () {
+                                _navigateToPatient(context, itemData);
+                              },
+                            ),
+                          ),
+                          title: const Text('Пациент:'),
                           subtitle: Text(
-                              '${itemData.firstName} ${itemData.lastName}'),
+                            '${itemData.firstName} ${itemData.lastName}',
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
                         ),
                       ),
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => MedicationListPage(
+                              patient: itemData,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     onDismissed: (direction) {
                       _onDelete(context, itemData);
@@ -68,20 +92,43 @@ class StartPage extends StatelessWidget {
                   );
                 },
               );
-            } else {
-              return Container();
             }
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {},
-          child: const Icon(
-            Icons.add,
-            color: Colors.deepPurple,
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              _navigateToPatient(context);
+            },
+            child: const Icon(
+              Icons.add,
+              color: Colors.deepPurple,
+            ),
           ),
+        );
+      }),
+    );
+  }
+
+  void _navigateToPatient(BuildContext context, [Patient? patient]) async {
+    final res = await Navigator.push<Patient?>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PatientInputPage(
+          patient: patient,
         ),
       ),
     );
+
+    if (res != null) {
+      final bloc = BlocProvider.of<PatientBloc>(context);
+      bloc.add(
+        patient != null
+            ? PatientChangePressed(patient: res)
+            : PatientAddPressed(patient: res),
+      );
+    }
   }
 
   void _onDelete(BuildContext context, Patient patient) {
